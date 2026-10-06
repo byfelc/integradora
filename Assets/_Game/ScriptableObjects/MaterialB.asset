@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
   id: material_b
   displayName: Material B
-  icon: {fileID: 0}
+  icon: {fileID: 5088316998373936774, guid: 9f154dedf6182c743a5ac8eafe6d122d, type: 3}
   description: 
