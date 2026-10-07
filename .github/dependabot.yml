@@ -1,0 +1,29 @@
+# Dependabot: abre PRs semanales hacia dev con dependencias vulnerables o desactualizadas.
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    target-branch: "dev"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: "chore(backend)" }
+
+  - package-ecosystem: "npm"
+    directory: "/web"
+    target-branch: "dev"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: "chore(web)" }
+
+  - package-ecosystem: "pub"
+    directory: "/mobile"
+    target-branch: "dev"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    commit-message: { prefix: "chore(mobile)" }
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "dev"
+    schedule: { interval: "weekly", day: "monday" }
+    commit-message: { prefix: "ci" }

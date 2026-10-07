@@ -1,0 +1,24 @@
+name: tdimp_mobile
+description: App móvil de The Day I Made That Promise — consulta partidas y estadísticas.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  # Versión de Dart compatible con el SDK fijado abajo.
+  sdk: ^3.5.0
+  # SDK de Flutter FIJADO: el pipeline (ci-mobile.yml) instala exactamente esta versión
+  # con flutter-version-file. Ajústala a la salida de `flutter --version` del equipo.
+  flutter: 3.35.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

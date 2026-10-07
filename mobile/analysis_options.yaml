@@ -1,0 +1,13 @@
+# Reglas de análisis estático (dart analyze / flutter analyze).
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_final_locals: true
+    avoid_print: true
+    always_declare_return_types: true
