@@ -1,12 +1,12 @@
 # The Day I Made That Promise — Proyecto integrador
 
-Monorepo del videojuego (Unity 6.6), la PWA (Spring Boot + Angular + PostgreSQL) y la app móvil (Flutter), con integración y entrega continua en GitHub Actions.
+Monorepo del videojuego (Unity 6.6), la PWA (API en Spring Boot + PostgreSQL y front end en React) y la app móvil (Flutter), con integración y entrega continua en GitHub Actions.
 
 | Carpeta | Módulo |
 |---|---|
 | `game/` | Videojuego Unity 6000.6.2f1 (URP 2D) |
 | `backend/` | API REST Spring Boot (Java 21) + migraciones Flyway |
-| `web/` | PWA Angular 21 |
+| `web/` | PWA React 19 + Vite (vite-plugin-pwa) |
 | `mobile/` | App Flutter |
 | `shared/contracts/openapi.yaml` | Contrato único de la API |
 | `infra/` | Scripts de compilación, pruebas, despliegue y configuración; `docker-compose.yml` |

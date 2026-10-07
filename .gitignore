@@ -48,7 +48,6 @@ yarn-error.log*
 # Backend Java (Maven)
 backend/target/
 # Web Angular
-web/.angular/
 web/coverage/
 web/cypress/videos/
 web/cypress/screenshots/

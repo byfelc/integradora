@@ -60,12 +60,27 @@ jobs:
           cache: true
       - name: Formato + análisis + pruebas
         run: ./infra/scripts/mobile/test.sh
+      # El APK se compila solo cuando existe la plataforma Android (mobile/android/,
+      # la genera `flutter create .`). Mientras tanto el check valida formato,
+      # análisis y pruebas, y deja un aviso en el resumen de la ejecución.
+      - name: ¿Existe la plataforma Android?
+        id: android
+        run: |
+          if [ -d mobile/android ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=APK omitido::mobile/android/ no existe todavía; ejecutar 'flutter create .' en mobile/"
+            echo "### APK omitido: falta mobile/android/ (ejecutar \`flutter create .\` en mobile/)" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Build APK release
+        if: steps.android.outputs.ready == 'true'
         env:
           # main apunta a la API de producción; dev y PRs a la de pruebas
           API_BASE_URL: ${{ github.ref_name == 'main' && vars.API_BASE_URL_PROD || vars.API_BASE_URL_STAGING }}
         run: ./infra/scripts/mobile/build.sh "0.1.${{ github.run_number }}"
       - name: Publicar APK
+        if: steps.android.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mobile-apk

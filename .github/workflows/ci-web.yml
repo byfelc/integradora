@@ -1,6 +1,6 @@
 # =====================================================================
-#  CI Web — PWA Angular
-#  Etapas: detectar cambios → npm ci (con caché) → ESLint → pruebas unitarias
+#  CI Web — PWA React (Vite)
+#  Etapas: detectar cambios → npm ci (con caché) → oxlint → pruebas unitarias (Vitest)
 #          → build de producción → verificación de service worker y manifest
 #  Artefacto: web-dist (paquete compilado que se despliega sin recompilar)
 # =====================================================================
@@ -54,7 +54,7 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Instalar + ESLint + pruebas unitarias
+      - name: Instalar + oxlint + pruebas unitarias
         run: ./infra/scripts/web/test.sh
       - name: Build de producción + verificación de PWA
         run: ./infra/scripts/web/build.sh
@@ -62,6 +62,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
-          path: web/dist/web/browser
+          path: web/dist
           retention-days: ${{ github.ref_name == 'main' && 90 || 14 }}
           if-no-files-found: error

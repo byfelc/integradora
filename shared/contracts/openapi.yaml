@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: >
     Contrato único entre el videojuego (productor), el backend (Spring Boot)
-    y los clientes PWA (Angular) y móvil (Flutter). Cualquier cambio a este
+    y los clientes PWA (React) y móvil (Flutter). Cualquier cambio a este
     archivo dispara la verificación de compatibilidad en ci-backend.yml.
   license:
     name: Uso académico — UTCH
