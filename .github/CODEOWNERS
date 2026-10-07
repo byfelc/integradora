@@ -1,0 +1,32 @@
+# CODEOWNERS — GitHub pide automáticamente la revisión de estas personas
+# en cada pull request que toque su carpeta (responsable principal primero).
+#
+# Usuarios confirmados en el historial del repo: @byfelc, @EmmanuelRDGZ98, @Sidas200 (Arturo).
+# Pendientes de vincular (sus commits no están ligados a un usuario de GitHub):
+#   Yahir (Yahir@utch.edu.mx), Santiago, Omar, Regina.
+# Cuando cada uno comparta su usuario, sustitúyelo en las líneas comentadas
+# y quita el "#". Un usuario sin acceso de escritura al repo se ignora.
+
+# Por defecto: dueño del repositorio + Product Owner
+*                         @byfelc @Sidas200
+
+# Videojuego (Unity 6.6)
+/game/                    @byfelc
+# /game/                  @usuario-omar @usuario-santiago
+
+# Backend y base de datos
+# /backend/               @usuario-yahir @EmmanuelRDGZ98
+
+# Web PWA
+# /web/                   @usuario-yahir @usuario-santiago
+
+# App móvil
+/mobile/                  @EmmanuelRDGZ98
+
+# Contrato de API: lo revisan los responsables de los tres clientes
+/shared/contracts/        @byfelc @EmmanuelRDGZ98
+# /shared/contracts/      @usuario-yahir @usuario-santiago @EmmanuelRDGZ98
+
+# Pipelines e infraestructura
+/.github/                 @byfelc
+/infra/                   @byfelc

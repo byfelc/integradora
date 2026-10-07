@@ -1,0 +1,161 @@
+# =====================================================================
+#  CD Staging — Entrega Continua al ambiente de pruebas
+#  Se dispara SOLO cuando el CI de dev terminó en verde (workflow_run).
+#  No recompila: despliega la imagen y el paquete que ya construyó el CI.
+#    Backend:  migraciones Flyway → Render (imagen :sha) → prueba de humo
+#    Web:      config.json del ambiente → Netlify (sitio de staging)
+#    E2E:      Cypress contra la PWA desplegada (tras cada despliegue y cada noche)
+#  Requisito: dev debe ser la rama por defecto (workflow_run y schedule
+#  usan la versión del workflow que vive en la rama por defecto).
+# =====================================================================
+name: CD Staging
+
+on:
+  workflow_run:
+    workflows: ["CI Backend", "CI Web"]
+    types: [completed]
+    branches: [dev]
+  schedule:
+    - cron: '30 8 * * *'         # 02:30 Chihuahua: e2e nocturno
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-staging
+  cancel-in-progress: false      # nunca cortar un despliegue a medias
+
+jobs:
+  backend:
+    name: deploy-backend-staging
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'CI Backend' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: staging
+      url: ${{ vars.API_URL }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Imagen construida por el CI para este commit
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/tdimp-backend:${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: ¿Hubo cambios de backend en este commit?
+        id: image
+        run: |
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ No hay imagen para este commit (el backend no cambió); no se despliega." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Migrar base de datos (Flyway)
+        if: steps.image.outputs.exists == 'true'
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: ./infra/scripts/db/migrate.sh
+      - name: Desplegar imagen en Render
+        if: steps.image.outputs.exists == 'true'
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: ./infra/scripts/deploy/render-deploy.sh "$IMAGE"
+      - name: Prueba de humo
+        if: steps.image.outputs.exists == 'true'
+        run: ./infra/scripts/deploy/smoke-test.sh "${{ vars.API_URL }}" 420
+
+  web:
+    name: deploy-web-staging
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'CI Web' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: staging
+      url: ${{ vars.WEB_URL }}
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      deployed: ${{ steps.artifact.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: ¿El CI produjo el paquete de la PWA?
+        id: artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          names=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" --jq '.artifacts[].name')
+          if echo "$names" | grep -qx web-dist; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Descargar paquete compilado por el CI
+        if: steps.artifact.outputs.exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Configurar URL de la API de pruebas (sin recompilar)
+        if: steps.artifact.outputs.exists == 'true'
+        run: ./infra/scripts/web/set-runtime-config.sh dist "${{ vars.API_URL }}"
+      - name: Publicar en Netlify (sitio de staging)
+        if: steps.artifact.outputs.exists == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          npx -y netlify-cli@17 deploy --dir=dist --prod \
+            --message "staging ${{ github.event.workflow_run.head_sha }}"
+
+  e2e:
+    name: e2e-staging
+    needs: [web]
+    if: >-
+      ${{ !cancelled() && (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        needs.web.outputs.deployed == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pruebas end to end (Cypress) contra la PWA desplegada
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: web
+          browser: chrome
+        env:
+          CYPRESS_BASE_URL: ${{ vars.WEB_URL }}
+      - name: Evidencia de fallos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: web/cypress/screenshots
+          retention-days: 7
+          if-no-files-found: ignore

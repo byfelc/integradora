@@ -1,0 +1,74 @@
+# =====================================================================
+#  CI Mobile — App móvil
+#  Etapas: detectar cambios → SDK fijado (pubspec.yaml) → formato → dart analyze
+#          → pruebas unitarias y de widgets → build APK release
+#  Artefacto: mobile-apk (instalable por el equipo y el docente)
+# =====================================================================
+name: CI Mobile
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: mobile-changes
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mobile:
+              - 'mobile/**'
+              - 'infra/scripts/mobile/**'
+              - '.github/workflows/ci-mobile.yml'
+
+  verify:
+    name: mobile-verify
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Instalar Flutter (versión fijada en pubspec.yaml)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: mobile/pubspec.yaml
+          cache: true
+      - name: Formato + análisis + pruebas
+        run: ./infra/scripts/mobile/test.sh
+      - name: Build APK release
+        env:
+          # main apunta a la API de producción; dev y PRs a la de pruebas
+          API_BASE_URL: ${{ github.ref_name == 'main' && vars.API_BASE_URL_PROD || vars.API_BASE_URL_STAGING }}
+        run: ./infra/scripts/mobile/build.sh "0.1.${{ github.run_number }}"
+      - name: Publicar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-apk
+          path: artifacts/mobile/*.apk
+          retention-days: ${{ github.ref_name == 'main' && 90 || 14 }}
+          if-no-files-found: error

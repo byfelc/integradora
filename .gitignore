@@ -43,3 +43,25 @@ yarn-error.log*
 .vscode/
 .idea/
 *.swp
+
+# ===== Agregado por la configuración de CI/CD =====
+# Backend Java (Maven)
+backend/target/
+# Web Angular
+web/.angular/
+web/coverage/
+web/cypress/videos/
+web/cypress/screenshots/
+# Móvil Flutter
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/coverage/
+mobile/android/key.properties
+mobile/android/app/*.jks
+# Licencias de Unity: JAMÁS se versionan
+*.ulf
+*.alf
+# Salida local de infra/scripts y archivos de secretos de load-secrets.sh
+artifacts/
+secrets.*.env
