@@ -60,8 +60,26 @@ jobs:
     permissions:
       contents: read
       checks: write
+    env:
+      # true solo si el secreto existe; sin licencia Unity no puede iniciar
+      HAS_UNITY_LICENSE: ${{ secrets.UNITY_LICENSE != '' }}
+    outputs:
+      licensed: ${{ steps.license.outputs.ready }}
     steps:
+      # Mientras no se carguen UNITY_LICENSE, UNITY_EMAIL y UNITY_PASSWORD, las pruebas
+      # y el build se omiten con un aviso en lugar de fallar. Al cargarlos corren solos.
+      - name: ¿Está configurada la licencia de Unity?
+        id: license
+        run: |
+          if [ "$HAS_UNITY_LICENSE" = "true" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pruebas de Unity omitidas::Falta el secreto UNITY_LICENSE (ver docs/GUIA-IMPLEMENTACION.md, fase 4)"
+            echo "### Pruebas de Unity omitidas: falta el secreto UNITY_LICENSE (guía, fase 4)" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Liberar espacio en disco (la imagen de Unity ocupa más de lo que trae libre el runner)
+        if: steps.license.outputs.ready == 'true'
         uses: jlumbroso/free-disk-space@v1.3.1
         with:
           android: true
@@ -72,15 +90,18 @@ jobs:
           tool-cache: false
           large-packages: false
       - uses: actions/checkout@v4
+        if: steps.license.outputs.ready == 'true'
         with:
           lfs: true
       - name: Caché de la carpeta Library (evita reimportar todos los assets)
+        if: steps.license.outputs.ready == 'true'
         uses: actions/cache@v4
         with:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-${{ hashFiles('game/Assets/**', 'game/Packages/**', 'game/ProjectSettings/**') }}
           restore-keys: Library-
       - name: Pruebas EditMode
+        if: steps.license.outputs.ready == 'true'
         uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -93,7 +114,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados EditMode
       - name: Publicar resultados de pruebas
-        if: always()
+        if: always() && steps.license.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: game-test-results
@@ -104,7 +125,7 @@ jobs:
   build:
     name: game-build-win64
     needs: [changes, tests]
-    if: ${{ !cancelled() && needs.tests.result == 'success' && github.event_name != 'pull_request' }}
+    if: ${{ !cancelled() && needs.tests.result == 'success' && needs.tests.outputs.licensed == 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
