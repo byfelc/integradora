@@ -61,6 +61,16 @@ jobs:
       contents: read
       checks: write
     steps:
+      - name: Liberar espacio en disco (la imagen de Unity ocupa más de lo que trae libre el runner)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          docker-images: true
+          swap-storage: true
+          tool-cache: false
+          large-packages: false
       - uses: actions/checkout@v4
         with:
           lfs: true
@@ -98,12 +108,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Liberar espacio en disco del runner (la imagen de Unity es grande)
+      - name: Liberar espacio en disco (la imagen de Unity ocupa más de lo que trae libre el runner)
         uses: jlumbroso/free-disk-space@v1.3.1
         with:
           android: true
           dotnet: true
           haskell: true
+          docker-images: true
+          swap-storage: true
+          tool-cache: false
           large-packages: false
       - uses: actions/checkout@v4
         with:
