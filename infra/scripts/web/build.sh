@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # =====================================================================
-#  Script de compilación — Frontend PWA (Angular)
+#  Script de compilación — Web PWA (React + Vite)
 #  Compila en modo producción y verifica que la salida siga siendo una PWA.
 #  Uso:   infra/scripts/web/build.sh
-#  Salida: web/dist/web/browser  (artefacto "web-dist")
+#  Salida: web/dist  (artefacto "web-dist")
 # =====================================================================
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -13,8 +13,8 @@ if [[ ! -d node_modules ]]; then
   CYPRESS_INSTALL_BINARY=0 npm ci --no-audit --no-fund
 fi
 
-echo "▶ Frontend: build de producción"
-npm run build:prod
+echo "▶ Web: build de producción (tsc + vite build + vite-plugin-pwa)"
+npm run build
 
-"$ROOT/infra/scripts/web/verify-pwa.sh" "$ROOT/web/dist/web/browser"
-echo "✔ Frontend: paquete listo en web/dist/web/browser"
+"$ROOT/infra/scripts/web/verify-pwa.sh" "$ROOT/web/dist"
+echo "✔ Web: paquete listo en web/dist"
