@@ -107,13 +107,9 @@ jobs:
         if: steps.license.outputs.ready == 'true'
         with:
           lfs: true
-      - name: Caché de la carpeta Library (evita reimportar todos los assets)
-        if: steps.license.outputs.ready == 'true'
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PROJECT_PATH }}/Library
-          key: Library-${{ hashFiles('game/Assets/**', 'game/Packages/**', 'game/ProjectSettings/**') }}
-          restore-keys: Library-
+      # Sin caché de Library a propósito: con una Library restaurada, Unity 6.6 se cerraba a los
+      # pocos segundos (su base de datos interna usa 1 GB de memoria compartida y el contenedor de
+      # GameCI tiene 1025 MB). Importar desde cero tarda ~16-20 min pero es estable.
       - name: Pruebas EditMode
         if: steps.license.outputs.ready == 'true'
         uses: game-ci/unity-test-runner@v4
@@ -127,8 +123,7 @@ jobs:
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados EditMode
-          # Log completo del editor como archivo, para diagnosticar si Unity se atora o falla
-          customParameters: -logFile /github/workspace/test-results/unity-editor.log
+          # GameCI guarda el log completo del editor en test-results/editmode.log (se publica abajo)
       - name: Memoria y disco después de Unity
         if: always() && steps.license.outputs.ready == 'true'
         run: |
