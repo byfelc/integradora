@@ -2017,10 +2017,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
+    x: 0.80364376
+    y: 0.0671875
+    width: 0.97165996
+    height: 0.84375
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
@@ -2823,6 +2823,18 @@ PrefabInstance:
     - target: {fileID: 2727085414248178534, guid: 8ff966d3e6ef24a0c89030f1b819cc18, type: 3}
       propertyPath: m_Name
       value: Pickup_MaterialB
+      objectReference: {fileID: 0}
+    - target: {fileID: 3619598567365034698, guid: 8ff966d3e6ef24a0c89030f1b819cc18, type: 3}
+      propertyPath: m_Color.b
+      value: 0.06054926
+      objectReference: {fileID: 0}
+    - target: {fileID: 3619598567365034698, guid: 8ff966d3e6ef24a0c89030f1b819cc18, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3619598567365034698, guid: 8ff966d3e6ef24a0c89030f1b819cc18, type: 3}
+      propertyPath: m_Color.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6734448085187933972, guid: 8ff966d3e6ef24a0c89030f1b819cc18, type: 3}
       propertyPath: m_LocalPosition.x
