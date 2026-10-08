@@ -56,7 +56,9 @@ jobs:
     needs: changes
     if: ${{ !cancelled() && (needs.changes.outputs.unity == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Sin caché de Library, Unity importa todo el proyecto desde cero (runner de 2 núcleos);
+    # la primera vez tarda más de 30 min. El caché solo se guarda si el job termina bien.
+    timeout-minutes: 60
     permissions:
       contents: read
       checks: write
@@ -113,12 +115,16 @@ jobs:
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados EditMode
-      - name: Publicar resultados de pruebas
+          # Log completo del editor como archivo, para diagnosticar si Unity se atora o falla
+          customParameters: -logFile /github/workspace/test-results/unity-editor.log
+      - name: Publicar resultados de pruebas y logs de Unity
         if: always() && steps.license.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: game-test-results
-          path: test-results
+          path: |
+            test-results
+            ${{ env.PROJECT_PATH }}/Logs
           retention-days: 14
           if-no-files-found: ignore
 
