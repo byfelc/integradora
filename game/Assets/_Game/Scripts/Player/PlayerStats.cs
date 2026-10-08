@@ -1,7 +1,10 @@
 using System;
 using UnityEngine;
 
-public class PlayerStats : MonoBehaviour, IDamageable
+// Se ejecuta antes que Health para que MaxHealth ya esté calculado
+[DefaultExecutionOrder(-10)]
+[RequireComponent(typeof(Health))]
+public class PlayerStats : MonoBehaviour, IHealthProvider
 {
     [Header("Base Stats")]
     [SerializeField] private int baseMaxHealth = 100;
@@ -10,22 +13,37 @@ public class PlayerStats : MonoBehaviour, IDamageable
     [SerializeField] private float baseMoveSpeed = 1.4f;
 
     public int MaxHealth { get; private set; }
-    public int CurrentHealth { get; private set; }
     public int Attack { get; private set; }
     public int Defense { get; private set; }
     public float MoveSpeed { get; private set; }
 
+    // Puente para scripts que ya usaban PlayerStats para la vida
+    public int CurrentHealth => health != null ? health.CurrentHealth : MaxHealth;
+
     public event Action OnStatsChanged;
     public event Action<int, int> OnHealthChanged; // (current, max)
 
+    private Health health;
     private EquipmentItem weapon;
     private EquipmentItem armor;
     private EquipmentItem accessory;
 
     private void Awake()
     {
+        health = GetComponent<Health>();
+        health.HealthChanged += HandleHealthChanged;
+        health.Died += HandleDeath;
+
         RecalculateStats();
-        CurrentHealth = MaxHealth;
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.HealthChanged -= HandleHealthChanged;
+            health.Died -= HandleDeath;
+        }
     }
 
     public void EquipItem(EquipmentItem item)
@@ -73,29 +91,21 @@ public class PlayerStats : MonoBehaviour, IDamageable
         MoveSpeed = baseMoveSpeed + bonusSpeed;
 
         if (MaxHealth != previousMax)
-            CurrentHealth = Mathf.Min(CurrentHealth == 0 ? MaxHealth : CurrentHealth + (MaxHealth - previousMax), MaxHealth);
+            health.ApplyMaxHealthChange(previousMax);
 
         OnStatsChanged?.Invoke();
-        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
     }
 
-    public void TakeDamage(int rawAmount)
+    // Puentes: redirigen a Health
+    public void Heal(int amount) => health.Heal(amount);
+    public void TakeDamage(int amount) => health.TakeDamage(amount);
+
+    private void HandleHealthChanged(int current, int max)
     {
-        int finalDamage = Mathf.Max(1, rawAmount - Defense);
-        CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
-        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-
-        if (CurrentHealth <= 0)
-            Die();
+        OnHealthChanged?.Invoke(current, max);
     }
 
-    public void Heal(int amount)
-    {
-        CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
-        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-    }
-
-    private void Die()
+    private void HandleDeath()
     {
         Debug.Log("El jugador murió.");
     }
