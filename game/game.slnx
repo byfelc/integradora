@@ -1,8 +1,0 @@
-﻿<Solution>
-  <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="Game.Telemetry.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
-  <Project Path="Unity.2D.Welcome.csproj" />
-  <Project Path="Game.Editor.CI.csproj" />
-  <Project Path="Game.Telemetry.Tests.csproj" />
-</Solution>
