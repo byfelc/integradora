@@ -8,7 +8,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - suelo
+  - 
   - Water
   - UI
   - 
@@ -38,9 +38,6 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: suelo
-    uniqueID: 431206427
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

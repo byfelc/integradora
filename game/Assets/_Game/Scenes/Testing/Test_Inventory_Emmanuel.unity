@@ -2017,10 +2017,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.5607288
-    y: 0.14059407
-    width: 1.45749
-    height: 1.6039604
+    x: 0
+    y: 0
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
@@ -2511,7 +2511,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 00000000i
+  m_ApplyToSortingLayers: 000000001bb0b319i
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -3223,6 +3223,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 603757355205976730, guid: 248b53abab046c5469b6083611f9765e, type: 3}
+      propertyPath: m_SortingLayer
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 603757355205976730, guid: 248b53abab046c5469b6083611f9765e, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 431206427
+      objectReference: {fileID: 0}
     - target: {fileID: 6120016890985337702, guid: 248b53abab046c5469b6083611f9765e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.19463
@@ -3266,6 +3274,10 @@ PrefabInstance:
     - target: {fileID: 6427333120394023865, guid: 248b53abab046c5469b6083611f9765e, type: 3}
       propertyPath: m_Name
       value: New Palette
+      objectReference: {fileID: 0}
+    - target: {fileID: 6427333120394023865, guid: 248b53abab046c5469b6083611f9765e, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6870418328887694336, guid: 248b53abab046c5469b6083611f9765e, type: 3}
       propertyPath: m_Size.x
@@ -28079,6 +28091,10 @@ PrefabInstance:
       propertyPath: m_Tiles.Array.data[883].second.m_TileObjectToInstantiateIndex
       value: 65535
       objectReference: {fileID: 0}
+    - target: {fileID: 7597808316173885763, guid: 248b53abab046c5469b6083611f9765e, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -30165,6 +30181,8 @@ GameObject:
   - component: {fileID: 1249487861}
   - component: {fileID: 1249487867}
   - component: {fileID: 1249487869}
+  - component: {fileID: 1249487871}
+  - component: {fileID: 1249487870}
   m_Layer: 0
   m_Name: protagonista_0
   m_TagString: Untagged
@@ -30221,8 +30239,12 @@ MonoBehaviour:
   ghostLifetime: 1
   dashParticles: {fileID: 2053440491}
   particleDuration: 4.5
-  attackRange: 0.3
+  usePlayerSize: 1
+  attackReach: 0.9
+  attackWidth: 1.6
   attackCooldown: 0.4
+  attackVisibleTime: 0.15
+  attackColor: {r: 1, g: 0, b: 0, a: 0.6}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -30377,6 +30399,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 204a24b8d57e4478185f6082f0284624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
+--- !u!114 &1249487870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1249487860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa3e9416ab135504799a0640a9b4cca2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealthDebugger
+  damageAmount: 10
+  healAmount: 10
+--- !u!114 &1249487871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1249487860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8d0fda3ca944f243bd15ef46d5fd9a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
+  minDamage: 1
+  destroyOnDeath: 0
+  invulnerableTime: 0
+  onHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1257205482
 GameObject:
   m_ObjectHideFlags: 0
@@ -35891,8 +35955,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 794649850}
   - {fileID: 1249487866}
+  - {fileID: 794649850}
   - {fileID: 1095438790238042328}
   - {fileID: 840469792}
   - {fileID: 718291538}

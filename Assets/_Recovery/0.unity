@@ -2730,10 +2730,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.23958334
-    y: 0.030555556
-    width: 0.25
-    height: 0.25
+    x: -0.375
+    y: -0.28125
+    width: 0.75
+    height: 0.5625
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
@@ -3769,14 +3769,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 603757355205976730, guid: 248b53abab046c5469b6083611f9765e, type: 3}
-      propertyPath: m_SortingLayer
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 603757355205976730, guid: 248b53abab046c5469b6083611f9765e, type: 3}
-      propertyPath: m_SortingLayerID
-      value: 431206427
-      objectReference: {fileID: 0}
     - target: {fileID: 6120016890985337702, guid: 248b53abab046c5469b6083611f9765e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.19463
@@ -30496,7 +30488,6 @@ GameObject:
   - component: {fileID: 1249487863}
   - component: {fileID: 1249487861}
   - component: {fileID: 1249487867}
-  - component: {fileID: 1249487869}
   m_Layer: 0
   m_Name: protagonista_0
   m_TagString: Untagged
@@ -30553,12 +30544,8 @@ MonoBehaviour:
   ghostLifetime: 1
   dashParticles: {fileID: 2053440491}
   particleDuration: 4.5
-  usePlayerSize: 1
-  attackReach: 0.9
-  attackWidth: 1.6
+  attackRange: 0.3
   attackCooldown: 0.4
-  attackVisibleTime: 0.15
-  attackColor: {r: 1, g: 0, b: 0, a: 0.5}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -30701,34 +30688,6 @@ MonoBehaviour:
   baseAttack: 10
   baseDefense: 0
   baseMoveSpeed: 1.4
---- !u!114 &1249487869
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1249487860}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8d0fda3ca944f243bd15ef46d5fd9a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHealth: 100
-  minDamage: 1
-  destroyOnDeath: 0
-  invulnerableTime: 0
-  onHealthChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  onDamaged:
-    m_PersistentCalls:
-      m_Calls: []
-  onHealed:
-    m_PersistentCalls:
-      m_Calls: []
-  onDeath:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1273909132
 GameObject:
   m_ObjectHideFlags: 0
