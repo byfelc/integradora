@@ -56,7 +56,9 @@ jobs:
     needs: changes
     if: ${{ !cancelled() && (needs.changes.outputs.unity == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Sin caché de Library, Unity importa todo el proyecto desde cero (runner de 2 núcleos);
+    # la primera vez tarda más de 30 min. El caché solo se guarda si el job termina bien.
+    timeout-minutes: 60
     permissions:
       contents: read
       checks: write
@@ -86,9 +88,21 @@ jobs:
           dotnet: true
           haskell: true
           docker-images: true
-          swap-storage: true
-          tool-cache: false
-          large-packages: false
+          swap-storage: false      # la swap se conserva: sin ella Unity agota los 7 GB de RAM
+          tool-cache: true
+          large-packages: true
+      - name: Memoria swap de 8 GB (Unity 6 importando el proyecto supera los 7 GB del runner)
+        if: steps.license.outputs.ready == 'true'
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          SWAP=/swapfile; mountpoint -q /mnt && SWAP=/mnt/swapfile   # /mnt es el disco temporal del runner
+          sudo fallocate -l 8G "$SWAP" || sudo dd if=/dev/zero of="$SWAP" bs=1M count=8192 status=none
+          sudo chmod 600 "$SWAP"
+          sudo mkswap "$SWAP" >/dev/null
+          sudo swapon "$SWAP"
+          free -h
+          df -h / /mnt 2>/dev/null || df -h /
       - uses: actions/checkout@v4
         if: steps.license.outputs.ready == 'true'
         with:
@@ -113,12 +127,21 @@ jobs:
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados EditMode
-      - name: Publicar resultados de pruebas
+          # Log completo del editor como archivo, para diagnosticar si Unity se atora o falla
+          customParameters: -logFile /github/workspace/test-results/unity-editor.log
+      - name: Memoria y disco después de Unity
+        if: always() && steps.license.outputs.ready == 'true'
+        run: |
+          free -h
+          df -h / /mnt 2>/dev/null || df -h /
+      - name: Publicar resultados de pruebas y logs de Unity
         if: always() && steps.license.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: game-test-results
-          path: test-results
+          path: |
+            test-results
+            ${{ env.PROJECT_PATH }}/Logs
           retention-days: 14
           if-no-files-found: ignore
 
@@ -136,9 +159,20 @@ jobs:
           dotnet: true
           haskell: true
           docker-images: true
-          swap-storage: true
-          tool-cache: false
-          large-packages: false
+          swap-storage: false      # la swap se conserva: sin ella Unity agota los 7 GB de RAM
+          tool-cache: true
+          large-packages: true
+      - name: Memoria swap de 8 GB (Unity 6 importando el proyecto supera los 7 GB del runner)
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          SWAP=/swapfile; mountpoint -q /mnt && SWAP=/mnt/swapfile   # /mnt es el disco temporal del runner
+          sudo fallocate -l 8G "$SWAP" || sudo dd if=/dev/zero of="$SWAP" bs=1M count=8192 status=none
+          sudo chmod 600 "$SWAP"
+          sudo mkswap "$SWAP" >/dev/null
+          sudo swapon "$SWAP"
+          free -h
+          df -h / /mnt 2>/dev/null || df -h /
       - uses: actions/checkout@v4
         with:
           lfs: true
@@ -162,6 +196,11 @@ jobs:
           buildName: ${{ env.BUILD_NAME }}
           buildMethod: TDIMP.CI.BuildScript.Build
           versioning: Semantic
+      - name: Memoria y disco después de Unity
+        if: always()
+        run: |
+          free -h
+          df -h / /mnt 2>/dev/null || df -h /
       - name: Configurar telemetría del build para el ambiente de pruebas
         run: |
           sudo chown -R "$USER" build
