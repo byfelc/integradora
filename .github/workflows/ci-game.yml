@@ -107,13 +107,9 @@ jobs:
         if: steps.license.outputs.ready == 'true'
         with:
           lfs: true
-      - name: Caché de la carpeta Library (evita reimportar todos los assets)
-        if: steps.license.outputs.ready == 'true'
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PROJECT_PATH }}/Library
-          key: Library-${{ hashFiles('game/Assets/**', 'game/Packages/**', 'game/ProjectSettings/**') }}
-          restore-keys: Library-
+      # Sin caché de Library a propósito: con una Library restaurada, Unity 6.6 se cerraba a los
+      # pocos segundos (su base de datos interna usa 1 GB de memoria compartida y el contenedor de
+      # GameCI tiene 1025 MB). Importar desde cero tarda ~16-20 min pero es estable.
       - name: Pruebas EditMode
         if: steps.license.outputs.ready == 'true'
         uses: game-ci/unity-test-runner@v4
@@ -127,8 +123,7 @@ jobs:
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados EditMode
-          # Log completo del editor como archivo, para diagnosticar si Unity se atora o falla
-          customParameters: -logFile /github/workspace/test-results/unity-editor.log
+          # GameCI guarda el log completo del editor en test-results/editmode.log (se publica abajo)
       - name: Memoria y disco después de Unity
         if: always() && steps.license.outputs.ready == 'true'
         run: |
@@ -201,11 +196,27 @@ jobs:
         run: |
           free -h
           df -h / /mnt 2>/dev/null || df -h /
+      # Mientras no exista el despliegue de staging (variable API_BASE_URL_STAGING y secreto
+      # TELEMETRY_API_KEY_STAGING), el ejecutable se publica sin telemetry.json y con un aviso.
       - name: Configurar telemetría del build para el ambiente de pruebas
+        env:
+          API_URL: ${{ vars.API_BASE_URL_STAGING }}
+          TELEMETRY_KEY: ${{ secrets.TELEMETRY_API_KEY_STAGING }}
         run: |
+          OUT=build/StandaloneWindows64
+          if [ ! -d "$OUT" ]; then
+            echo "::error title=Build sin salida::No existe $OUT; contenido de build/:"
+            ls -la build 2>/dev/null || echo "(no existe build/)"
+            exit 1
+          fi
           sudo chown -R "$USER" build
-          ./infra/scripts/game/write-telemetry-config.sh build/StandaloneWindows64 \
-            "${{ vars.API_BASE_URL_STAGING }}" "${{ secrets.TELEMETRY_API_KEY_STAGING }}"
+          ls -la "$OUT"
+          if [ -z "$API_URL" ] || [ -z "$TELEMETRY_KEY" ]; then
+            echo "::notice title=Telemetría omitida::Falta la variable API_BASE_URL_STAGING o el secreto TELEMETRY_API_KEY_STAGING; el ejecutable se publica sin telemetry.json"
+            echo "### Ejecutable publicado sin telemetry.json (falta configurar staging)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          ./infra/scripts/game/write-telemetry-config.sh "$OUT" "$API_URL" "$TELEMETRY_KEY"
       - name: Publicar ejecutable
         uses: actions/upload-artifact@v4
         with:
