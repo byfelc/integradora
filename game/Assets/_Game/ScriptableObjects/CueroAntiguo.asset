@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6cc8fb65cf42b4fc19d09363be824950, type: 3}
-  m_Name: MaterialB
+  m_Name: CueroAntiguo
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
-  id: material_b
-  displayName: Material B
-  icon: {fileID: 5088316998373936774, guid: 9f154dedf6182c743a5ac8eafe6d122d, type: 3}
-  description: 
+  id: cuero_antiguo
+  displayName: Cuero antiguo
+  icon: {fileID: 0}
+  description: Cuero resistente que deja el golem antiguo.
