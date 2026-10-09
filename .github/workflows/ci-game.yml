@@ -65,6 +65,7 @@ jobs:
     env:
       # true solo si el secreto existe; sin licencia Unity no puede iniciar
       HAS_UNITY_LICENSE: ${{ secrets.UNITY_LICENSE != '' }}
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_TOKEN != '' }}
     outputs:
       licensed: ${{ steps.license.outputs.ready }}
     steps:
@@ -107,6 +108,27 @@ jobs:
         if: steps.license.outputs.ready == 'true'
         with:
           lfs: true
+      # Docker Hub limita las descargas anónimas por IP, y los runners comparten IP: con cuenta
+      # (secretos DOCKERHUB_USERNAME y DOCKERHUB_TOKEN) el límite es propio. Sin secretos se omite.
+      - name: Iniciar sesión en Docker Hub
+        if: steps.license.outputs.ready == 'true' && env.HAS_DOCKERHUB == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # GameCI no reintenta la descarga; aquí se baja antes con reintentos y GameCI la encuentra local.
+      - name: Descargar imagen de Unity (con reintentos)
+        if: steps.license.outputs.ready == 'true'
+        run: |
+          VER=$(sed -n 's/^m_EditorVersion: //p' ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectVersion.txt | tr -d '\r')
+          IMAGE="unityci/editor:ubuntu-${VER}-linux-il2cpp-3"
+          for i in 1 2 3 4 5; do
+            echo "Intento $i: docker pull $IMAGE"
+            if docker pull -q "$IMAGE"; then exit 0; fi
+            [ "$i" -lt 5 ] && sleep $((i * 60))
+          done
+          echo "::error title=Imagen de Unity::No se pudo descargar $IMAGE tras 5 intentos"
+          exit 1
       # Sin caché de Library a propósito: con una Library restaurada, Unity 6.6 se cerraba a los
       # pocos segundos (su base de datos interna usa 1 GB de memoria compartida y el contenedor de
       # GameCI tiene 1025 MB). Importar desde cero tarda ~16-20 min pero es estable.
@@ -146,6 +168,8 @@ jobs:
     if: ${{ !cancelled() && needs.tests.result == 'success' && needs.tests.outputs.licensed == 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_TOKEN != '' }}
     steps:
       - name: Liberar espacio en disco (la imagen de Unity ocupa más de lo que trae libre el runner)
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -179,6 +203,26 @@ jobs:
           restore-keys: |
             Library-win64-
             Library-
+      # Docker Hub limita las descargas anónimas por IP, y los runners comparten IP: con cuenta
+      # (secretos DOCKERHUB_USERNAME y DOCKERHUB_TOKEN) el límite es propio. Sin secretos se omite.
+      - name: Iniciar sesión en Docker Hub
+        if: env.HAS_DOCKERHUB == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # GameCI no reintenta la descarga; aquí se baja antes con reintentos y GameCI la encuentra local.
+      - name: Descargar imagen de Unity (con reintentos)
+        run: |
+          VER=$(sed -n 's/^m_EditorVersion: //p' ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectVersion.txt | tr -d '\r')
+          IMAGE="unityci/editor:ubuntu-${VER}-windows-mono-3"
+          for i in 1 2 3 4 5; do
+            echo "Intento $i: docker pull $IMAGE"
+            if docker pull -q "$IMAGE"; then exit 0; fi
+            [ "$i" -lt 5 ] && sleep $((i * 60))
+          done
+          echo "::error title=Imagen de Unity::No se pudo descargar $IMAGE tras 5 intentos"
+          exit 1
       - name: Compilar ejecutable para Windows 64 bits
         uses: game-ci/unity-builder@v4
         env:
