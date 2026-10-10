@@ -3,7 +3,8 @@
 #  Paso 4 de la práctica: carga secretos y variables desde archivos locales
 #  que NUNCA se versionan (están en .gitignore como .env).
 #  Uso:   infra/scripts/setup/load-secrets.sh <owner>/<repo>
-#  Espera:  secrets.repo.env  secrets.staging.env  secrets.production.env  (formato CLAVE=valor)
+#  Espera:  secrets.repo.env  (formato CLAVE=valor), p. ej. UNITY_LICENSE, UNITY_EMAIL,
+#           UNITY_PASSWORD, DOCKERHUB_USERNAME, DOCKERHUB_TOKEN
 #  Las líneas que empiezan con VAR_ se guardan como variables (no secretas) sin el prefijo.
 # =====================================================================
 set -euo pipefail
@@ -27,6 +28,4 @@ load() {
 }
 
 load secrets.repo.env
-load secrets.staging.env staging
-load secrets.production.env production
 echo "✔ Secretos cargados. Borra los archivos .env locales si ya no los necesitas."

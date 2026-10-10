@@ -1,43 +1,35 @@
-# The Day I Made That Promise — Proyecto integrador
+# The Day I Made That Promise — Videojuego
 
-Monorepo del videojuego (Unity 6.6), la PWA (API en Spring Boot + PostgreSQL y front end en React) y la app móvil (Flutter), con integración y entrega continua en GitHub Actions.
+Proyecto integrador: videojuego 2D isométrico en **Unity 6000.6.2f1** (URP 2D), con integración y entrega continua en GitHub Actions.
 
-| Carpeta | Módulo |
+| Carpeta | Contenido |
 |---|---|
-| `game/` | Videojuego Unity 6000.6.2f1 (URP 2D) |
-| `backend/` | API REST Spring Boot (Java 21) + migraciones Flyway |
-| `web/` | PWA React 19 + Vite (vite-plugin-pwa) |
-| `mobile/` | App Flutter |
-| `shared/contracts/openapi.yaml` | Contrato único de la API |
-| `infra/` | Scripts de compilación, pruebas, despliegue y configuración; `docker-compose.yml` |
-| `.github/workflows/` | 7 pipelines |
-| `docs/` | Documentación (guía de implementación de CI/CD) |
+| `game/` | Proyecto de Unity (ábrelo en Unity Hub con *Add › carpeta `game/`*, nunca la raíz del repo) |
+| `game/ArtSource/` | Archivos fuente de arte que Unity no importa (Aseprite, etc.) |
+| `infra/scripts/` | Pruebas locales, configuración del build, empaquetado del release y configuración del repo |
+| `.github/workflows/` | `ci-game.yml` (pruebas y build) y `release.yml` (versiones) |
+| `docs/` | Guía de implementación de CI/CD |
 
-## Comandos rápidos
+## Pruebas locales
 
 ```bash
-cd infra && cp .env.example .env && docker compose up --build   # backend + PostgreSQL locales
-infra/scripts/test-all.sh                                        # pruebas de los módulos instalados
-infra/scripts/backend/test.sh  | infra/scripts/backend/build.sh
-infra/scripts/web/test.sh      | infra/scripts/web/build.sh
-infra/scripts/mobile/test.sh   | infra/scripts/mobile/build.sh
-infra/scripts/contract/check.sh origin/dev
+# macOS
+UNITY="/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity" infra/scripts/game/run-tests-local.sh
 ```
+
+También desde el editor: *Window › General › Test Runner › EditMode › Run All*.
 
 ## Pipelines
 
 | Workflow | Se dispara | Produce |
 |---|---|---|
-| `ci-backend.yml` | PR y push a dev/main (backend o contrato) | `reporte-backend`, imagen `ghcr.io/byfelc/tdimp-backend:<sha>` |
-| `ci-web.yml` | PR y push (web) | `web-dist` |
-| `ci-mobile.yml` | PR y push (mobile) | `mobile-apk` |
-| `ci-game.yml` | PR (pruebas), push y cada noche (build) | `game-test-results`, `game-win64` |
-| `cd-staging.yml` | CI verde en dev, y cada noche (e2e) | despliegue a pruebas |
-| `release.yml` | tag `vX.Y.Z` en main | GitHub Release con artefactos |
-| `cd-production.yml` | lo lanza release.yml; aprobación por issue | despliegue a producción |
+| `ci-game.yml` | PR y push a `dev`/`main` que toquen `game/`; noches de lunes a viernes | `game-test-results` (pruebas EditMode) y, fuera de PR, `game-win64` (ejecutable de Windows) |
+| `release.yml` | tag `vX.Y.Z` sobre `main` | GitHub Release con `tdimp-windows-vX.Y.Z.zip` |
+
+Secretos que usa: `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`, `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` y, opcionalmente, `TELEMETRY_API_KEY_STAGING` / `TELEMETRY_API_KEY_PROD` con las variables `API_BASE_URL_STAGING` / `API_BASE_URL_PROD`.
 
 ## Flujo de trabajo
 
-`feature/<modulo>-<descripcion>` desde `dev` → PR con plantilla → 1 aprobación + checks verdes → squash merge → despliegue automático a staging → PO valida → PR `dev → main` → tag → aprobación → producción.
+`feature/<descripcion>` desde `dev` → PR con plantilla → `game-tests` en verde + 1 aprobación → merge commit a `dev` → al cierre del sprint, PR `dev → main` → tag `vX.Y.Z` → Release.
 
-Guía completa: [`docs/GUIA-IMPLEMENTACION.md`](docs/GUIA-IMPLEMENTACION.md)
+> Hasta el 9 de octubre de 2026 este repositorio fue un monorepo con backend (Spring Boot), PWA (React) y app móvil (Flutter). Ese estado se conserva en el tag `monorepo-final`.

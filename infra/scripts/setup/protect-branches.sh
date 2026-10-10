@@ -11,7 +11,7 @@
 set -euo pipefail
 REPO="${1:?Uso: protect-branches.sh <owner>/<repo>}"
 
-CHECKS='["backend-verify","backend-contract","web-verify","mobile-verify","game-tests"]'
+CHECKS='["game-tests"]'
 
 protect() {
   local branch="$1" approvals="$2"

@@ -8,24 +8,12 @@ Closes #<!-- número del issue de GitHub Projects -->
 - [ ] docs — documentación
 - [ ] refactor / test / chore
 
-## Módulo(s) afectado(s)
-- [ ] game
-- [ ] backend
-- [ ] web
-- [ ] mobile
-- [ ] contracts / infraestructura
-
-## ¿Toca el contrato o la base de datos?
-- [ ] Modifiqué `shared/contracts/openapi.yaml` en este mismo PR (y avisé a los responsables de los clientes)
-- [ ] Agregué una migración Flyway nueva (`V<n>__descripcion.sql`), nunca edité una existente
-- [ ] No aplica
-
 ## Definición de Terminado (marcar antes de pedir revisión)
-- [ ] El pipeline del módulo está en verde
-- [ ] Agregué o actualicé pruebas automatizadas del comportamiento nuevo
-- [ ] Probé localmente con `scripts/<modulo>/test.sh`
-- [ ] Actualicé el README del módulo si cambió la configuración
-- [ ] (Unity) No modifiqué escenas que tiene asignadas otro integrante
+- [ ] `game-tests` está en verde
+- [ ] Agregué o actualicé pruebas EditMode del comportamiento nuevo (si aplica)
+- [ ] Los archivos nuevos de `game/Assets/` incluyen su `.meta`
+- [ ] Abrí el proyecto desde `game/` (no desde la raíz del repo)
+- [ ] No modifiqué escenas que tiene asignadas otro integrante
 
 ## Cómo probarlo
-<!-- pasos breves para el revisor -->
+<!-- escena, pasos y resultado esperado para el revisor -->

@@ -6,6 +6,8 @@ Esta guía aplica la configuración de CI/CD sobre el repositorio real, partiend
 
 > Los comandos se ejecutan desde la raíz del repo en Git Bash (Windows) o una terminal (macOS/Linux).
 
+> **Nota (9 de octubre de 2026):** el equipo decidió que este repositorio contenga solo el videojuego. Las fases de backend, PWA, app móvil, contrato de API y despliegues a Render/Netlify/Supabase describen el estado anterior (monorepo), que se conserva en el tag `monorepo-final`. Del repositorio actual siguen vigentes las fases de Unity, licencia, protección de ramas y release.
+
 ## Estado del repositorio al iniciar (revisado el 7 de octubre de 2026)
 
 | Hallazgo | Impacto | Se resuelve en |
