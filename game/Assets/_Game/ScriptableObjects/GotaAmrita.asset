@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6cc8fb65cf42b4fc19d09363be824950, type: 3}
-  m_Name: MaterialA
+  m_Name: GotaAmrita
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
-  id: material_a
-  displayName: Material A
-  icon: {fileID: -855298285791758126, guid: 0eb38cc1e14d2304a85a5d4e100a67be, type: 3}
-  description: 
+  id: gota_amrita
+  displayName: Gota de Amrita
+  icon: {fileID: 0}
+  description: Ofrenda que despierta al jefe. Se consume al usarla.

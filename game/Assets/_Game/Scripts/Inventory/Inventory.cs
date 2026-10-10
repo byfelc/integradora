@@ -40,4 +40,29 @@ public class Inventory : MonoBehaviour
         OnAmountChanged?.Invoke(materialId, amounts[materialId]);
         return true;
     }
+
+        // Revisa si hay suficientes ingredientes para la receta (no consume nada).
+    public bool CanCraft(CraftingRecipe recipe)
+    {
+        if (recipe == null || recipe.result == null) return false;
+
+        foreach (var ing in recipe.ingredients)
+        {
+            if (ing.material == null) return false;
+            if (!Has(ing.material.id, ing.amount)) return false;
+        }
+        return true;
+    }
+
+    // Todo o nada: si falta algo, no consume nada.
+    public bool TryCraft(CraftingRecipe recipe)
+    {
+        if (!CanCraft(recipe)) return false;
+
+        foreach (var ing in recipe.ingredients)
+            TryConsume(ing.material.id, ing.amount);
+
+        Add(recipe.result, recipe.resultAmount);
+        return true;
+    }
 }
