@@ -196,13 +196,9 @@ jobs:
         with:
           lfs: true
           fetch-depth: 0           # GameCI calcula la versión semántica con los tags
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.PROJECT_PATH }}/Library
-          key: Library-win64-${{ hashFiles('game/Assets/**', 'game/Packages/**', 'game/ProjectSettings/**') }}
-          restore-keys: |
-            Library-win64-
-            Library-
+      # Sin caché de Library, igual que en game-tests: con una Library restaurada Unity 6.6 muere a los
+      # pocos segundos (exit 137). Importar desde cero tarda más, pero el repo es público y los minutos
+      # de Actions no tienen costo.
       # Docker Hub limita las descargas anónimas por IP, y los runners comparten IP: con cuenta
       # (secretos DOCKERHUB_USERNAME y DOCKERHUB_TOKEN) el límite es propio. Sin secretos se omite.
       - name: Iniciar sesión en Docker Hub
