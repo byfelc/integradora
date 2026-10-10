@@ -62,19 +62,13 @@ game/Assets/AddressableAssetsData/*/*.bin*
 game/Assets/StreamingAssets/aa*
 game/ServerData/
 
-# ===== Node (web/, mobile/, backend/) =====
-node_modules/
-dist/
+# ===== Salidas de compilación (GameCI escribe en build/) =====
 build/
-.expo/
-.gradle/
-npm-debug.log*
-yarn-error.log*
 
-# ===== Variables de entorno (nunca subir) =====
+# ===== Variables de entorno y secretos (nunca subir) =====
 .env
 .env.*
-!.env.example
+secrets.*.env
 
 # ===== Editores =====
 .vs/
@@ -82,23 +76,9 @@ yarn-error.log*
 .idea/
 *.swp
 
-# ===== Agregado por la configuración de CI/CD =====
-# Backend Java (Maven)
-backend/target/
-# Web React (Vite)
-web/coverage/
-web/cypress/videos/
-web/cypress/screenshots/
-# Móvil Flutter
-mobile/.dart_tool/
-mobile/.flutter-plugins
-mobile/.flutter-plugins-dependencies
-mobile/coverage/
-mobile/android/key.properties
-mobile/android/app/*.jks
-# Licencias de Unity: JAMÁS se versionan
+# ===== Licencias de Unity: JAMÁS se versionan =====
 *.ulf
 *.alf
-# Salida local de infra/scripts y archivos de secretos de load-secrets.sh
+
+# ===== Salida local de infra/scripts =====
 artifacts/
-secrets.*.env

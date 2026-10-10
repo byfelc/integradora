@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # =====================================================================
-#  Reúne, SIN RECOMPILAR, el último artefacto exitoso de cada módulo en main
+#  Reúne, SIN RECOMPILAR, el último ejecutable exitoso del juego en main
 #  para adjuntarlo al GitHub Release de la versión.
-#  Como cada workflow solo compila cuando cambia su carpeta, el último artefacto
-#  de main de cada módulo ES la versión vigente de ese módulo.
+#  Como el build solo corre cuando cambia game/, el último artefacto de main
+#  ES la versión vigente del juego.
 #  Requiere: gh CLI autenticado (GH_TOKEN) y jq.
 #  Uso:   infra/scripts/release/collect-artifacts.sh <version>   ej. v1.0.0
 # =====================================================================
@@ -14,8 +14,6 @@ rm -rf "$OUT" && mkdir -p "$OUT"
 
 # workflow : nombre del artefacto : archivo final
 MODULES=(
-  "ci-web.yml:web-dist:tdimp-pwa-${VERSION}.zip"
-  "ci-mobile.yml:mobile-apk:tdimp-android-${VERSION}.zip"
   "ci-game.yml:game-win64:tdimp-windows-${VERSION}.zip"
 )
 

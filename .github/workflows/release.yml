@@ -1,12 +1,10 @@
 # =====================================================================
-#  Release — Publicación de una versión (versionado semántico)
+#  Release — Publicación de una versión del juego (versionado semántico)
 #  Se dispara al empujar un tag vMAYOR.MENOR.PARCHE sobre main:
 #      git switch main && git pull && git tag v1.0.0 && git push origin v1.0.0
 #  1. Verifica que el tag apunte a un commit de main.
-#  2. Promueve la imagen del backend :main → :v1.0.0 (sin reconstruir).
-#  3. Reúne el último artefacto exitoso de main de cada módulo (PWA, APK, juego).
-#  4. Crea el GitHub Release con notas generadas desde los commits.
-#  5. Lanza cd-production.yml, que espera la aprobación de Regina o Arturo.
+#  2. Reúne el último ejecutable de Windows compilado en main (sin recompilar).
+#  3. Crea el GitHub Release con notas generadas desde los PR.
 # =====================================================================
 name: Release
 
@@ -16,8 +14,7 @@ on:
 
 permissions:
   contents: write      # crear el release
-  packages: write      # etiquetar la imagen
-  actions: write       # descargar artefactos y lanzar cd-production
+  actions: read        # descargar el artefacto del CI
 
 jobs:
   release:
@@ -38,18 +35,7 @@ jobs:
             echo "✘ $VERSION no apunta a un commit de main; las versiones solo salen de main." >&2
             exit 1
           fi
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@v3
-      - name: Promover imagen del backend (:main → :${{ env.VERSION }})
-        run: |
-          IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/tdimp-backend"
-          docker buildx imagetools create -t "$IMAGE:$VERSION" "$IMAGE:main"
-          echo "### Imagen: \`$IMAGE:$VERSION\`" >> "$GITHUB_STEP_SUMMARY"
-      - name: Reunir artefactos de cada módulo
+      - name: Reunir el ejecutable del juego
         env:
           PROD_API_URL: ${{ vars.API_BASE_URL_PROD }}
           TELEMETRY_API_KEY_PROD: ${{ secrets.TELEMETRY_API_KEY_PROD }}
@@ -60,9 +46,5 @@ jobs:
           tag_name: ${{ env.VERSION }}
           name: The Day I Made That Promise ${{ env.VERSION }}
           generate_release_notes: true
-          fail_on_unmatched_files: false
+          fail_on_unmatched_files: true
           files: artifacts/release/*.zip
-      - name: Lanzar despliegue a producción (espera aprobación)
-        # Los eventos creados con GITHUB_TOKEN no disparan otros workflows,
-        # excepto workflow_dispatch; por eso se lanza explícitamente.
-        run: gh workflow run cd-production.yml --ref "$VERSION" -f version="$VERSION"
